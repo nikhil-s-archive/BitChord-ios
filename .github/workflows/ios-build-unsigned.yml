@@ -1,0 +1,52 @@
+name: Build Unsigned iOS App
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode Project
+        working-directory: iosApp/BitChord
+        run: xcodegen generate
+
+      - name: Build Unsigned App
+        working-directory: iosApp/BitChord
+        run: |
+          xcodebuild clean build \
+            -project BitChord.xcodeproj \
+            -scheme BitChord \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath derived_data \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package into IPA
+        working-directory: iosApp/BitChord
+        run: |
+          mkdir -p Payload
+          mv derived_data/Build/Products/Release-iphoneos/*.app Payload/
+          zip -r app-unsigned.ipa Payload
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-unsigned.ipa
+          path: iosApp/BitChord/app-unsigned.ipa

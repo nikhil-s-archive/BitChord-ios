@@ -1,0 +1,15 @@
+name: BitChord
+options:
+  bundleIdPrefix: com.music.bitchord
+targets:
+  BitChord:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources: [Sources]
+    info:
+      path: Info.plist
+      properties:
+        UILaunchScreen: {}
+        UIRequiredDeviceCapabilities: [arm64]
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
